@@ -1,2 +1,2 @@
-# spinningWheelWeb
-its a spinning wheel
+# spinningWheel
+A webapp that is a random selector of items.
