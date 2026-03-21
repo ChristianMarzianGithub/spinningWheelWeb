@@ -18,6 +18,8 @@
 }
 
 body {
+  display: flex;
+  flex-direction: column;
   margin: 0;
   min-height: 100vh;
   font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
@@ -29,11 +31,13 @@ body {
 
 #root {
   min-height: 100vh;
+  flex: 1;
+  width: 100%;
 }
 
 .app {
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 40px;
   padding: 40px 24px 64px;
   display: flex;
   flex-direction: column;
@@ -338,4 +342,105 @@ textarea {
   .winner-card {
     animation: none;
   }
+}
+
+.main-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  min-height: 100vh;
+  gap: 0;
+}
+
+.ad-area {
+  background: var(--card);
+  border-right: 1px solid var(--stroke);
+  padding: 20px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+@media (max-width: 1400px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+  .ad-area {
+    height: auto;
+    min-height: 100px;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid var(--stroke);
+  }
+}
+
+.info-page {
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--stroke);
+  border-radius: 28px;
+  padding: 32px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 16px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.info-card {
+  background: white;
+  border: 1px solid rgba(16, 33, 42, 0.12);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 6px 16px rgba(16, 33, 42, 0.08);
+}
+
+.info-card h3 {
+  margin: 0 0 8px;
+}
+
+.info-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.site-footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--stroke);
+  display: flex;
+  justify-content: center;
+}
+
+.footer-content {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.footer-content nav {
+  display: flex;
+  gap: 12px;
+}
+
+.footer-content a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-content a:hover {
+  color: var(--sea);
 }

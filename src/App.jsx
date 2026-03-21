@@ -15,8 +15,20 @@ const PALETTE = [
   "#ff6b6b",
 ];
 const MAX_ITEMS = 10;
+const ROUTE_HOME = "home";
+const ROUTE_IMPRESSUM = "impressum";
+const ROUTE_DATENSCHUTZ = "datenschutz";
+
+const resolveRoute = (path) => {
+  if (path?.startsWith("/impressum")) return ROUTE_IMPRESSUM;
+  if (path?.startsWith("/datenschutz")) return ROUTE_DATENSCHUTZ;
+  return ROUTE_HOME;
+};
 
 export default function App() {
+  const [route, setRoute] = useState(() =>
+    typeof window !== "undefined" ? resolveRoute(window.location.pathname) : ROUTE_HOME
+  );
   const [names, setNames] = useState([]);
   const [input, setInput] = useState("");
   const [bulkInput, setBulkInput] = useState(
@@ -30,6 +42,23 @@ export default function App() {
 
   const SPIN_DURATION_MS = 3000;
 
+  const navigate = (path) => {
+    if (typeof window === "undefined") return;
+    if (window.location.pathname === path) return;
+    window.history.pushState({}, "", path);
+    setRoute(resolveRoute(path));
+    window.scrollTo({ top: 0, behavior: "auto" });
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const handlePopState = () => setRoute(resolveRoute(window.location.pathname));
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
   useEffect(() => {
     return () => {
       if (spinTimeoutRef.current) {
@@ -37,6 +66,11 @@ export default function App() {
       }
     };
   }, []);
+
+  const handleNav = (event, path) => {
+    event.preventDefault();
+    navigate(path);
+  };
 
   const addName = (value) => {
     const cleaned = value.trim();
@@ -154,159 +188,335 @@ export default function App() {
     });
   }, [names, sliceAngle]);
 
+  const isHome = route === ROUTE_HOME;
+  const isImpressum = route === ROUTE_IMPRESSUM;
+  const isDatenschutz = route === ROUTE_DATENSCHUTZ;
+
   return (
-    <div className="app">
-      <header className="hero">
-        <div>
-          <p className="eyebrow">Random selector</p>
-          <h1>Spin the Wheel</h1>
-          <p className="subtitle">
-            Drop in names, spin once, and let chance pick the winner.
+    <div className="main-layout">
+      <aside className="ad-area" aria-label="Advertisement">
+        AD SPACE
+      </aside>
+      <div className="app">
+        {isHome && (
+          <>
+            <header className="hero">
+              <div>
+                <p className="eyebrow">Random selector</p>
+                <h1>Welcome to pickawinner.space</h1>
+                <p className="subtitle">
+                  Drop in names, spin once, and let chance pick a winner.
+                </p>
+              </div>
+              <div className="hero-badge">
+                <span>Fair. Fast. Fun.</span>
+              </div>
+            </header>
+
+            <main className="content">
+              <section className="panel">
+                <h2>Build the list</h2>
+                <form className="input-row" onSubmit={handleAdd}>
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(event) => setInput(event.target.value)}
+                    placeholder="Add a name"
+                    disabled={isSpinning}
+                  />
+                  <button
+                    className="btn"
+                    type="submit"
+                    disabled={isSpinning || names.length >= MAX_ITEMS}
+                  >
+                    Add
+                  </button>
+                </form>
+                <div className="bulk">
+                  <label htmlFor="bulk">Add many at once</label>
+                  <textarea
+                    id="bulk"
+                    value={bulkInput}
+                    onChange={(event) => setBulkInput(event.target.value)}
+                    placeholder="Paste names separated by commas or new lines"
+                    rows={4}
+                    disabled={isSpinning || names.length >= MAX_ITEMS}
+                  />
+                  <button
+                    className="btn ghost"
+                    type="button"
+                    onClick={handleBulkAdd}
+                    disabled={isSpinning || names.length >= MAX_ITEMS}
+                  >
+                    Add many
+                  </button>
+                </div>
+
+                <div className="list">
+                  <div className="list-header">
+                    <h3>Names</h3>
+                    <span>
+                      {names.length} / {MAX_ITEMS}
+                    </span>
+                  </div>
+                  {names.length === 0 ? (
+                    <p className="empty">
+                      Start with a few names to unlock the wheel.
+                    </p>
+                  ) : (
+                    <ul>
+                      {names.map((name, index) => (
+                        <li key={`${name}-${index}`}>
+                          <span>{name}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeName(index)}
+                            disabled={isSpinning}
+                            aria-label={`Remove ${name}`}
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </section>
+
+              <section className="wheel-panel">
+                <div className="wheel-header">
+                  <h2>Spin</h2>
+                  <p>Tap the wheel or the button to start.</p>
+                </div>
+
+                <div className="wheel-stage">
+                  <div className="pointer" aria-hidden="true" />
+                  <div
+                    className={`wheel ${isSpinning ? "spinning" : ""}`}
+                    style={{ transform: `rotate(${rotation}deg)` }}
+                    onTransitionEnd={handleSpinEnd}
+                    role="img"
+                    aria-label="Spinning wheel"
+                    onClick={handleSpin}
+                  >
+                    <svg
+                      className="wheel-svg"
+                      viewBox="0 0 400 400"
+                      aria-hidden="true"
+                    >
+                      <g>
+                        {slices.map((slice, index) => (
+                          <path
+                            key={`${slice.name}-${index}`}
+                            d={slice.path}
+                            fill={slice.color}
+                          />
+                        ))}
+                      </g>
+                      <g>
+                        {slices.map((slice, index) => {
+                          const rotateText = isSpinning ? 0 : -normalizedRotation;
+                          return (
+                            <text
+                              key={`${slice.name}-${index}-label`}
+                              x={slice.label.x}
+                              y={slice.label.y}
+                              fill="rgba(16, 33, 42, 0.85)"
+                              fontSize="14"
+                              fontWeight="600"
+                              textAnchor="middle"
+                              dominantBaseline="middle"
+                              transform={`rotate(${rotateText} ${slice.label.x} ${slice.label.y})`}
+                            >
+                              {slice.name}
+                            </text>
+                          );
+                        })}
+                      </g>
+                    </svg>
+                  </div>
+                  <button
+                    className="btn spin"
+                    type="button"
+                    onClick={handleSpin}
+                    disabled={names.length === 0 || isSpinning}
+                  >
+                    {isSpinning ? "Spinning..." : "Spin the wheel"}
+                  </button>
+                </div>
+
+                <div className={`winner ${winner ? "show" : ""}`} aria-live="polite">
+                  {winner ? (
+                    <div className="winner-card">
+                      <p>Winner</p>
+                      <h3>{winner}</h3>
+                    </div>
+                  ) : (
+                    <p className="winner-placeholder">Spin to reveal the winner.</p>
+                  )}
+                </div>
+              </section>
+            </main>
+          </>
+        )}
+
+        {isImpressum && <ImpressumPage onNavigateHome={(event) => handleNav(event, "/")} />}
+        {isDatenschutz && (
+          <DatenschutzPage onNavigateHome={(event) => handleNav(event, "/")} />
+        )}
+
+        <footer className="site-footer">
+          <div className="footer-content">
+            <span>© 2024 pickawinner.space</span>
+            <nav>
+              <a href="/" onClick={(event) => handleNav(event, "/")}>
+                Home
+              </a>
+              <a href="/impressum" onClick={(event) => handleNav(event, "/impressum")}>
+                Impressum
+              </a>
+              <a href="/datenschutz" onClick={(event) => handleNav(event, "/datenschutz")}>
+                Datenschutz
+              </a>
+            </nav>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+function ImpressumPage({ onNavigateHome }) {
+  return (
+    <section className="info-page">
+      <p className="eyebrow">Legal notice</p>
+      <h1>Impressum</h1>
+      <p className="subtitle">Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz).</p>
+
+      <div className="info-grid">
+        <div className="info-card">
+          <h3>Verantwortlich</h3>
+          <p>
+            Christian Marzian
+            <br />
+            Brunnenstraße 29
+            <br />
+            58332 Schwelm
+            <br />
+            Deutschland
           </p>
         </div>
-        <div className="hero-badge">
-          <span>Fair. Fast. Fun.</span>
+        <div className="info-card">
+          <h3>Kontakt</h3>
+          <p>
+            E-Mail: cmarzian91@gmail.com
+            <br />
+            Telefon: +49 0157 34 31 65 72
+          </p>
         </div>
-      </header>
+      </div>
 
-      <main className="content">
-        <section className="panel">
-          <h2>Build the list</h2>
-          <form className="input-row" onSubmit={handleAdd}>
-            <input
-              type="text"
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              placeholder="Add a name"
-              disabled={isSpinning}
-            />
-            <button
-              className="btn"
-              type="submit"
-              disabled={isSpinning || names.length >= MAX_ITEMS}
-            >
-              Add
-            </button>
-          </form>
-          <div className="bulk">
-            <label htmlFor="bulk">Add many at once</label>
-            <textarea
-              id="bulk"
-              value={bulkInput}
-              onChange={(event) => setBulkInput(event.target.value)}
-              placeholder="Paste names separated by commas or new lines"
-              rows={4}
-              disabled={isSpinning || names.length >= MAX_ITEMS}
-            />
-            <button
-              className="btn ghost"
-              type="button"
-              onClick={handleBulkAdd}
-              disabled={isSpinning || names.length >= MAX_ITEMS}
-            >
-              Add many
-            </button>
-          </div>
+      <button className="btn ghost" onClick={onNavigateHome} type="button">
+        Zurück zum Wheel
+      </button>
+    </section>
+  );
+}
 
-          <div className="list">
-            <div className="list-header">
-              <h3>Names</h3>
-              <span>
-                {names.length} / {MAX_ITEMS}
-              </span>
-            </div>
-            {names.length === 0 ? (
-              <p className="empty">Start with a few names to unlock the wheel.</p>
-            ) : (
-              <ul>
-                {names.map((name, index) => (
-                  <li key={`${name}-${index}`}>
-                    <span>{name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeName(index)}
-                      disabled={isSpinning}
-                      aria-label={`Remove ${name}`}
-                    >
-                      Remove
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
+function DatenschutzPage({ onNavigateHome }) {
+  return (
+    <section className="info-page">
+      <p className="eyebrow">Privacy</p>
+      <h1>Datenschutzerklärung</h1>
+      <p className="subtitle">So gehen wir mit Daten auf pickawinner.space um.</p>
 
-        <section className="wheel-panel">
-          <div className="wheel-header">
-            <h2>Spin</h2>
-            <p>Tap the wheel or the button to start.</p>
-          </div>
+      <div className="info-card">
+        <h3>Verantwortliche Stelle</h3>
+        <p>
+          Christian Marzian
+          <br />
+          Brunnenstraße 29
+          <br />
+          58332 Schwelm
+          <br />
+          Deutschland
+        </p>
+        <p>
+          E-Mail: cmarzian91@gmail.com
+          <br />
+          Telefon: +49 0157 34 31 65 72
+        </p>
+      </div>
 
-          <div className="wheel-stage">
-            <div className="pointer" aria-hidden="true" />
-            <div
-              className={`wheel ${isSpinning ? "spinning" : ""}`}
-              style={{ transform: `rotate(${rotation}deg)` }}
-              onTransitionEnd={handleSpinEnd}
-              role="img"
-              aria-label="Spinning wheel"
-              onClick={handleSpin}
-            >
-              <svg
-                className="wheel-svg"
-                viewBox="0 0 400 400"
-                aria-hidden="true"
-              >
-                <g>
-                  {slices.map((slice, index) => (
-                    <path key={`${slice.name}-${index}`} d={slice.path} fill={slice.color} />
-                  ))}
-                </g>
-                <g>
-                  {slices.map((slice, index) => {
-                    const rotateText = isSpinning ? 0 : -normalizedRotation;
-                    return (
-                      <text
-                        key={`${slice.name}-${index}-label`}
-                        x={slice.label.x}
-                        y={slice.label.y}
-                        fill="rgba(16, 33, 42, 0.85)"
-                        fontSize="14"
-                        fontWeight="600"
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        transform={`rotate(${rotateText} ${slice.label.x} ${slice.label.y})`}
-                      >
-                        {slice.name}
-                      </text>
-                    );
-                  })}
-                </g>
-              </svg>
-            </div>
-            <button
-              className="btn spin"
-              type="button"
-              onClick={handleSpin}
-              disabled={names.length === 0 || isSpinning}
-            >
-              {isSpinning ? "Spinning..." : "Spin the wheel"}
-            </button>
-          </div>
+      <div className="info-card">
+        <h3>Verarbeitung der eingegebenen Daten</h3>
+        <p>
+          Die auf dieser Website eingegebenen Namen werden ausschließlich lokal im
+          Browser verarbeitet, um die Auswahl auf dem Wheel zu ermöglichen. Es erfolgt
+          keine Übertragung dieser Daten an einen Server und keine dauerhafte Speicherung.
+        </p>
+      </div>
 
-          <div className={`winner ${winner ? "show" : ""}`} aria-live="polite">
-            {winner ? (
-              <div className="winner-card">
-                <p>Winner</p>
-                <h3>{winner}</h3>
-              </div>
-            ) : (
-              <p className="winner-placeholder">Spin to reveal the winner.</p>
-            )}
-          </div>
-        </section>
-      </main>
-    </div>
+      <div className="info-card">
+        <h3>Server-Logfiles</h3>
+        <p>
+          Beim Besuch dieser Website werden automatisch Informationen durch den Server
+          erfasst. Dies sind z. B. IP-Adresse, Datum und Uhrzeit des Zugriffs,
+          verwendeter Browser sowie das Betriebssystem des Nutzers. Diese Daten sind
+          technisch erforderlich, um die Website korrekt auszuliefern.
+        </p>
+      </div>
+
+      <div className="info-card">
+        <h3>Cookies</h3>
+        <p>
+          Diese Website verwendet Cookies. Cookies sind kleine Textdateien, die auf
+          Ihrem Endgerät gespeichert werden und die eine Analyse der Benutzung der
+          Website ermöglichen.
+        </p>
+      </div>
+
+      <div className="info-card">
+        <h3>Werbung (Google AdSense)</h3>
+        <p>
+          Diese Website verwendet Google AdSense, einen Dienst zum Einbinden von
+          Werbeanzeigen der Google Ireland Limited, Gordon House, Barrow Street,
+          Dublin 4, Irland.
+        </p>
+        <p>
+          Google AdSense verwendet Cookies und sogenannte Web Beacons. Dadurch kann
+          Google Informationen über die Nutzung dieser Website auswerten. Die durch
+          Cookies und Web Beacons erzeugten Informationen über die Benutzung dieser
+          Website (einschließlich Ihrer IP-Adresse) können an Server von Google
+          übertragen und dort gespeichert werden.
+        </p>
+      </div>
+
+      <div className="info-card">
+        <h3>Rechtsgrundlage</h3>
+        <p>
+          Die Verarbeitung erfolgt gemäß Art. 6 Abs. 1 lit. f DSGVO (berechtigtes
+          Interesse an der Bereitstellung einer funktionierenden Website und der
+          Finanzierung des Angebots durch Werbung).
+        </p>
+      </div>
+
+      <div className="info-card">
+        <h3>Ihre Rechte</h3>
+        <p>
+          Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der
+          Verarbeitung Ihrer personenbezogenen Daten sowie das Recht auf Beschwerde bei
+          einer Aufsichtsbehörde.
+        </p>
+        <p>
+          Wenn Sie Fragen zum Datenschutz haben, kontaktieren Sie mich bitte unter:
+          cmarzian91@gmail.com
+        </p>
+      </div>
+
+      <button className="btn ghost" onClick={onNavigateHome} type="button">
+        Zurück zum Wheel
+      </button>
+    </section>
   );
 }
