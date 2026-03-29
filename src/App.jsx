@@ -193,10 +193,7 @@ export default function App() {
   const isDatenschutz = route === ROUTE_DATENSCHUTZ;
 
   return (
-    <div className="main-layout">
-      <aside className="ad-area" aria-label="Advertisement">
-        AD SPACE
-      </aside>
+    <div className="main-layout" >
       <div className="app">
         {isHome && (
           <>
@@ -356,6 +353,57 @@ export default function App() {
                   )}
                 </div>
               </section>
+              <h1>Random Name Picker – Choose a Winner Fairly in Seconds</h1>
+              <br/>
+              <p>Sometimes a group needs to choose one person, but no one wants to decide manually. This simple random name picker helps you solve that problem in seconds.</p>
+              <p>Just enter the names, click the button, and the tool will randomly select one person from the list. Every name has the same chance of being chosen, which makes the result completely fair.</p>
+              <p>You can use the tool in school, at work, at home, or with friends. It works directly in your browser and does not require an account or registration.</p>
+              <br/>
+              <h1>How the Random Name Picker Works</h1>
+              <br/>
+              <p>Using the tool is very simple and only takes a few seconds.</p>
+              <p>First, enter the names of the people in your group. You can enter as many names as you want. After that, click the button and the tool will randomly choose one name from the list.</p>
+              <p>The result appears instantly, and the selection is completely random. This makes it perfect for situations where you want a fair decision without arguments or discussions.</p>
+              <br/>
+              <h1>Who Can Use This Random Name Picker?</h1>
+              <br/>
+              <p>This tool is useful in many everyday situations and can be used by anyone who needs to choose a person randomly.</p>
+              <h2>In School</h2>
+              <p>Teachers can use the random name picker to choose a student to answer a question or participate in class. This makes the selection fair and avoids always choosing the same students.</p>
+              <h2>At Work</h2>
+              <p>Teams can use the tool to decide who presents first in a meeting, who takes the next task, or who is responsible for something in a group project. It helps make decisions quickly and without pressure.</p>
+              <h2>With Friends</h2>
+              <p>You can use the tool to decide who pays for food, who chooses the movie, or who has to do something first. Instead of arguing, you can just let the tool decide randomly.</p>
+              <h2>For Games and Fun Activities</h2>
+              <p>The random name picker is also great for party games, group activities, and small competitions where you need to choose a winner quickly.</p>
+              <br/>
+              <br/>
+              <h1>Why Use a Random Name Picker?</h1>
+              <br/>
+              <p>Choosing someone manually can sometimes feel unfair, especially in larger groups. A random name picker removes that problem and makes the selection completely neutral.</p>
+              <br/>
+              <h3>Benefits of using a random name generator:</h3>
+              <br/>
+              <p>Fair for everyone</p>
+              <p>No arguments or discussions</p>
+              <p>Works instantly</p>
+              <p>Easy to use on mobile and desktop</p>
+              <p>No account required</p>
+              <p>Completely free to use</p>
+              <p></p>
+              <br/>
+              <br/>
+              <br/>
+              <h1>Frequently Asked Questions  (FAQs)</h1>
+              <br/>
+              <p><strong>Is the random name picker really fair?</strong></p>
+              <p>Yes. The tool randomly selects one name from the list you enter. Every person has the same chance of being chosen.</p>
+              <p><strong>Do I need to create an account to use the tool?</strong></p>
+              <p>No. You can use the random name picker immediately without signing up or creating an account.</p>
+              <p><strong>Can I use the tool on my phone?</strong></p>
+              <p>Yes. The random name picker works on both smartphones and computers. You can use it anywhere as long as you have a browser.</p>
+              <p><strong>Is there a limit to how many names I can enter?</strong></p>
+              <p>You can enter as many names as you want. The tool will still randomly select one name from the list.</p>
             </main>
           </>
         )}
